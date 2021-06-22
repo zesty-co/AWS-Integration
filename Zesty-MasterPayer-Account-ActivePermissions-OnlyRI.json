@@ -66,8 +66,6 @@
                     "tag:GetTagValues",
                     "elasticloadbalancing:Describe*",
                     "ec2:Describe*",
-                    "ec2:CreateTags",
-                    "ec2:DeleteTags",
                     "ec2:CreateReservedInstancesListing",
                     "ec2:PurchaseReservedInstancesOffering",
                     "ec2:PurchaseHostReservation",
@@ -75,9 +73,7 @@
                     "ec2:GetReservedInstancesExchangeQuote",
                     "ec2:AcceptReservedInstancesExchangeQuote",
                     "ec2:CancelReservedInstancesListing",
-                    "ec2:ModifyReservedInstances",
-                    "elasticloadbalancing:RemoveTags",
-                    "elasticloadbalancing:AddTags"
+                    "ec2:ModifyReservedInstances"
                   ],
                   "Resource": [
                     "*"
@@ -87,9 +83,7 @@
                   "Sid": "ZestyEC2AutoScalingAccess",
                   "Effect": "Allow",
                   "Action": [
-                    "autoscaling:Describe*",
-                    "autoscaling:CreateOrUpdateTags",
-                    "autoscaling:DeleteTags"
+                    "autoscaling:Describe*"
                   ],
                   "Resource": [
                     "*"
