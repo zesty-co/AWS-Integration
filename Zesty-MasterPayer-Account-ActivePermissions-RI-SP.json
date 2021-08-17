@@ -94,12 +94,7 @@
                   "Effect": "Allow",
                   "Action": [
                     "organizations:List*",
-                    "organizations:Describe*",
-                    "organizations:InviteAccountToOrganization",
-                    "organizations:DeclineHandshake",
-                    "organizations:AcceptHandshake",
-                    "organizations:CancelHandshake",
-                    "organizations:MoveAccount"
+                    "organizations:Describe*"
                   ],
                   "Resource": [
                     "*"
