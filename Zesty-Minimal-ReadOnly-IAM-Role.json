@@ -128,13 +128,10 @@
                   ]
                 },
                 {
-                  "Sid": "ZestyCloudTrailAccess",
+                  "Sid": "ZestyCostandUsageReportsAccess",
                   "Effect": "Allow",
                   "Action": [
-                    "cloudtrail:List*",
-                    "cloudtrail:LookupEvents",
-                    "cloudtrail:Describe*",
-                    "cloudtrail:Get*"
+                    "cur:DescribeReportDefinitions"
                   ],
                   "Resource": [
                     "*"
