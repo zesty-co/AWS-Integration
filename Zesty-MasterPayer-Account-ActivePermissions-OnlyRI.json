@@ -1,168 +1,204 @@
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Integration IAM Role for Zesty",
-  "Metadata": {
-    "AWS::CloudFormation::Interface": {
-      "ParameterGroups": [
-        {
-          "Label": {
-            "default": "Zesty Customer Configuration"
-          },
-          "Parameters": [
-            "ClientUUIDToken"
-          ]
-        }
-      ],
-      "ParameterLabels": {
-        "ClientUUIDToken": {
-          "default": "Zesty Customer ID"
-        }
-      }
-    }
-  },
-  "Parameters": {
-    "ClientUUIDToken": {
-      "Description": "[DO NOT MODIFY] The customer ID provided by Zesty to identify you as a client",
-      "Type": "String"
-    }
-  },
-  "Resources": {
-    "ZestyIamRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Condition": {
-                "StringEquals": {
-                  "sts:ExternalId": {
-                    "Ref": "ClientUUIDToken"
-                  }
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Integration IAM Role for Zesty",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Zesty Customer Configuration"
+                    },
+                    "Parameters": [
+                        "ClientUUIDToken"
+                    ]
                 }
-              },
-              "Principal": {
-                "AWS": [
-                  "arn:aws:iam::672188301118:root"
+            ],
+            "ParameterLabels": {
+                "ClientUUIDToken": {
+                    "default": "Zesty Customer ID"
+                }
+            }
+        }
+    },
+    "Parameters": {
+        "ClientUUIDToken": {
+            "Description": "[DO NOT MODIFY] The customer ID provided by Zesty to identify you as a client",
+            "Type": "String"
+        },
+        "BucketName": {
+            "Type": "String",
+            "Description": "The name of the S3 Bucket to create, make this unique",
+            "Default": "cost-and-usage-reports"
+        },
+        "AWSRegion": {
+            "Type": "String",
+            "Default": "us-east-1"
+        },
+        "ZestyAccountId": {
+            "Type": "String",
+            "Description": "Used to build the role allowing s3 access",
+            "Default": "672188301118"
+        }
+    },
+    "Resources": {
+      "ZestyIamRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Condition": {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ClientUUIDToken"
+                    }
+                  }
+                },
+                "Principal": {
+                  "AWS": [
+                    "arn:aws:iam::672188301118:root"
+                  ]
+                }
+              }
+            ]
+          },
+          "MaxSessionDuration": 43200,
+          "Policies": [
+            {
+              "PolicyName": "Zesty-Policy",
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Sid": "ZestyEC2Access",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:List*",
+                      "tag:GetResources",
+                      "tag:GetTagKeys",
+                      "tag:GetTagValues",
+                      "elasticloadbalancing:Describe*",
+                      "ec2:Describe*",
+                      "ec2:CreateReservedInstancesListing",
+                      "ec2:PurchaseReservedInstancesOffering",
+                      "ec2:PurchaseHostReservation",
+                      "ec2:ModifyInstanceCreditSpecification",
+                      "ec2:GetReservedInstancesExchangeQuote",
+                      "ec2:AcceptReservedInstancesExchangeQuote",
+                      "ec2:CancelReservedInstancesListing",
+                      "ec2:ModifyReservedInstances"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "Sid": "ZestyEC2AutoScalingAccess",
+                    "Effect": "Allow",
+                    "Action": [
+                      "autoscaling:Describe*"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "Sid": "ZestyOrganizationsAccess",
+                    "Effect": "Allow",
+                    "Action": [
+                      "organizations:List*",
+                      "organizations:Describe*"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "Sid": "ZestyCloudWatchAccess",
+                    "Effect": "Allow",
+                    "Action": [
+                      "cloudwatch:List*",
+                      "cloudwatch:Describe*",
+                      "cloudwatch:GetMetricStatistics"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "Sid": "ZestySavingsPlansAccess",
+                    "Effect": "Allow",
+                    "Action": [
+                      "savingsplans:List*",
+                      "savingsplans:Describe*",
+                      "savingsplans:*"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "Sid": "ZestyCostExplorerAccess",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ce:List*",
+                      "ce:Describe*",
+                      "ce:Get*"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "Sid": "ZestyCostandUsageReportsAccess",
+                    "Effect": "Allow",
+                    "Action": [
+                      "cur:DescribeReportDefinitions"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "Sid": "ZestyCURBucketAccess",
+                    "Action": [
+                        "s3:Get*",
+                        "s3:List*"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": {
+                        "Fn::Sub": "arn:aws:s3:::${BucketName}"
+                    }
+                  },
+                  {
+                    "Sid": "ZestyCURBucketObjectsAccess",
+                    "Action": [
+                        "s3:Get*",
+                        "s3:List*"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": {
+                        "Fn::Sub": "arn:aws:s3:::${BucketName}/*"
+                    }
+                  }
                 ]
               }
             }
-          ]
-        },
-        "MaxSessionDuration": 43200,
-        "Policies": [
-          {
-            "PolicyName": "Zesty-Policy",
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Sid": "ZestyEC2Access",
-                  "Effect": "Allow",
-                  "Action": [
-                    "ec2:List*",
-                    "tag:GetResources",
-                    "tag:GetTagKeys",
-                    "tag:GetTagValues",
-                    "elasticloadbalancing:Describe*",
-                    "ec2:Describe*",
-                    "ec2:CreateReservedInstancesListing",
-                    "ec2:PurchaseReservedInstancesOffering",
-                    "ec2:PurchaseHostReservation",
-                    "ec2:ModifyInstanceCreditSpecification",
-                    "ec2:GetReservedInstancesExchangeQuote",
-                    "ec2:AcceptReservedInstancesExchangeQuote",
-                    "ec2:CancelReservedInstancesListing",
-                    "ec2:ModifyReservedInstances"
-                  ],
-                  "Resource": [
-                    "*"
-                  ]
-                },
-                {
-                  "Sid": "ZestyEC2AutoScalingAccess",
-                  "Effect": "Allow",
-                  "Action": [
-                    "autoscaling:Describe*"
-                  ],
-                  "Resource": [
-                    "*"
-                  ]
-                },
-                {
-                  "Sid": "ZestyOrganizationsAccess",
-                  "Effect": "Allow",
-                  "Action": [
-                    "organizations:List*",
-                    "organizations:Describe*"
-                  ],
-                  "Resource": [
-                    "*"
-                  ]
-                },
-                {
-                  "Sid": "ZestyCloudWatchAccess",
-                  "Effect": "Allow",
-                  "Action": [
-                    "cloudwatch:List*",
-                    "cloudwatch:Describe*",
-                    "cloudwatch:GetMetricStatistics"
-                  ],
-                  "Resource": [
-                    "*"
-                  ]
-                },
-                {
-                  "Sid": "ZestySavingsPlansAccess",
-                  "Effect": "Allow",
-                  "Action": [
-                    "savingsplans:List*",
-                    "savingsplans:Describe*",
-                    "savingsplans:*"
-                  ],
-                  "Resource": [
-                    "*"
-                  ]
-                },
-                {
-                  "Sid": "ZestyCostExplorerAccess",
-                  "Effect": "Allow",
-                  "Action": [
-                    "ce:List*",
-                    "ce:Describe*",
-                    "ce:Get*"
-                  ],
-                  "Resource": [
-                    "*"
-                  ]
-                },
-                {
-                  "Sid": "ZestyCostandUsageReportsAccess",
-                  "Effect": "Allow",
-                  "Action": [
-                    "cur:DescribeReportDefinitions"
-                  ],
-                  "Resource": [
-                    "*"
-                  ]
-                }
-              ]
-            }
-          }
-        ],
-        "RoleName": "ZestyIamRole_2021-01-11_1dbfd52a"
+          ],
+          "RoleName": "ZestyIamRole_2021-01-11_1dbfd52a"
+        }
       }
-    }
-  },
-  "Outputs": {
-    "ZestyRoleArn": {
-      "Description": "The ARN of the role created for Zesty integration",
-      "Value": {
-        "Fn::GetAtt": [
-          "ZestyIamRole",
-          "Arn"
-        ]
+    },
+    "Outputs": {
+      "ZestyRoleArn": {
+        "Description": "The ARN of the role created for Zesty integration",
+        "Value": {
+          "Fn::GetAtt": [
+            "ZestyIamRole",
+            "Arn"
+          ]
+        }
       }
     }
   }
-}
